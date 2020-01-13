@@ -1,0 +1,59 @@
+<Label>:
+    halign: "left"
+    background_color: 0.1,0.5,0.6,1
+
+<Widget>:
+    canvas.after:
+        Line:
+            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+            dash_offset: 5
+            dash_length: 3
+
+<FloatLayout>:
+    console: console
+    id:id
+    debug:debug
+    GridLayout:
+        size_hint: 1,0.6
+        pos_hint: {"x":0, "top":1}
+        cols: 1
+        rows:2
+        Label:
+            id: id
+            font_size: 40
+            text: root.id1
+            size_hint: 1,0.1
+            pos_hint: {"x":0, "top":1}
+            text_size: self.size
+            halign: 'left'
+
+
+        TextInput:
+            id: console
+            text: ""
+            multiline: False
+            size_hint: 1,0.4
+            pos_hint: {"x":0, "y":0.5}
+            text_size: self.size
+            halign: 'left'
+            foreground_color: (1, 1, 1, 1)
+            background_color: 0,0,0,1
+            on_text_validate: root.on_enter()
+    GridLayout:
+        rows:1
+        cols:1
+        size_hint: 1,0.4
+        pos_hint: {"x":0, "y":0}
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+
+            Label:
+                id:debug
+                size_hint_y: None
+                halign: "left"
+                text_size: root.width, None
+                size: self.texture_size
+                height: self.texture_size[1]
+                text:
+                    root.debug1
