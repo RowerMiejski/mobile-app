@@ -24,7 +24,7 @@ class MyGui(FloatLayout):
     isNeeded = False
 
     def __init__(self, **kwargs):
-        super(MyGui,self).__init__(**kwargs)
+        super(MyGui, self).__init__(**kwargs)
         t1 = threading.Thread(target=self.idUpdate)
         t1.start()
 
@@ -45,13 +45,16 @@ class MyGui(FloatLayout):
             self.debug.text = ""
         elif str(self.words[0].lower()) == "send" and len(self.words) > 1:
             if self.isInQueue:
-                self.sendCommand(self.words[1].lower(), self.words[2])
+                if len(self.words) > 2:
+                    print(len(self.words))
+                    self.sendCommand(self.words[1].lower(), self.words[2])
+                else:
+                    self.sendCommand(self.words[1].lower(), "")
+
             else:
                 self.debug.text += " - BLAD, nie wybrales kolejki.\n"
         else:
             self.debugUpdate(True)
-
-
 
     def changeQueue(self, args):
         self.queue = str(args)
@@ -62,9 +65,9 @@ class MyGui(FloatLayout):
 
     def debugUpdate(self, didFail):
         if didFail:
-            self.debug.text += "- komenda zakonczona niepowodzeniem."
+            self.debug.text += "- komenda zakonczona niepowodzeniem.\n"
         else:
-            self.debug.text += "- komenda zakonczona powodzeniem."
+            self.debug.text += "- komenda zakonczona powodzeniem.\n"
 
     def idUpdate(self):
         serverID.ReadConfig("serwer", True)
@@ -91,7 +94,10 @@ class MyGui(FloatLayout):
             self.isNeeded = False
 
     def sendCommand(self, command, args):
-        server.Write("kuba" + " " + command + " " + args, self.queue)
+        if len(self.words) > 1:
+            server.Write("kuba" + " " + command + " " + args, self.queue)
+        else:
+            server.Write("kuba" + " " + command, self.queue)
         self.debugUpdate(False)
 
 
