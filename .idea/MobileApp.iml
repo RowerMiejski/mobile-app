@@ -7,5 +7,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Sandbox" />
+    <orderEntry type="module" module-name="Sandbox" />
   </component>
 </module>
