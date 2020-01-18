@@ -16,14 +16,12 @@ serverData.ReadConfig("ids", True)
 server.ReadConfig("kuba", True)
 
 
-
-
 class MyGui(FloatLayout):
     console = ObjectProperty(None)
     idBox = ObjectProperty()
     debug = ObjectProperty()
     id1 = "ID :"
-    debug1 = "Podaj swoje imie"
+    debug1 = "Podaj maszyne do ktorej chcesz sie podlaczyc"
     command = ""
     queue = ""
     isInQueue = False
@@ -31,6 +29,7 @@ class MyGui(FloatLayout):
     isNeeded = False
     idString = ""
     idList = []
+
     def __init__(self, **kwargs):
         super(MyGui, self).__init__(**kwargs)
         t1 = threading.Thread(target=self.idUpdate)
@@ -38,6 +37,7 @@ class MyGui(FloatLayout):
         t4 = threading.Thread(target=self.getInfoBack)
         t4.start()
         self.idString = str(serverData.Read())
+        serverData.Write(self.idString, "ids")
         self.idList = self.idString.split()
         print(self.idList)
 
@@ -69,14 +69,20 @@ class MyGui(FloatLayout):
 
             else:
                 self.debug.text += " - BLAD, nie wybrales kolejki.\n"
+        elif str(self.words[0].lower()) == "getids":
+            self.getIds()
         else:
             self.debugUpdate(True)
 
     def changeQueue(self, args):
         self.queue = str(args)
         self.idBox.text = ""
-        self.idBox.text = "ID: " + self.queue
-        self.debugUpdate(False)
+        if self.queue in self.idList:
+            self.idBox.text = "ID: " + self.queue
+            self.debugUpdate(False)
+        else:
+            self.debug.text += " -Blad, nie ma takiej kolejki"
+            self.idBox.text = "ID: "
         self.isInQueue = True
 
     def debugUpdate(self, didFail):
@@ -94,16 +100,16 @@ class MyGui(FloatLayout):
             self.debug.text += " \nURZADZENIE PROSI O ID, WPISZ KOMENDE giveid + ID"
             msg = ""
         self.idUpdate()
+
     def giveID(self, ID):
         global idString
         if self.isNeeded:
-            print("wysylam id")
-            serverID.Write(ID, "serwer_response")
             serverData.ReadConfig("ids", True)
             self.debugUpdate(False)
             self.isNeeded = False
-            print("czytam lsite id")
             self.idString += " " + ID
+            self.idList.append(ID)
+            serverData.Read()
             serverData.Write(str(self.idString), "ids")
         else:
             self.debug.text += " - Nie otrzymano komendy needID"
@@ -125,8 +131,7 @@ class MyGui(FloatLayout):
             self.getInfoBack()
 
     def getIds(self):
-        print(self.idList)
-
+        self.debug.text += "\n" + str(self.idList)
 
 
 class MyApp(App):
@@ -142,4 +147,3 @@ def start():
 t2 = threading.Thread(target=start)
 t2.start()
 
-""""""
