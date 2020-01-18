@@ -14,16 +14,16 @@
     idBox: jebaniedisa
     debug:debug
     GridLayout:
-        size_hint: 1,0.6
+        size_hint: 1,0.4
         pos_hint: {"x":0, "top":1}
         cols: 1
         rows:2
 
         Label:
             id: jebaniedisa
-            font_size: 40
+            font_size: 25
             text: root.id1
-            size_hint: 1,0.1
+            size_hint: 1,0.05
             pos_hint: {"x":0, "top":1}
             text_size: self.size
             halign: 'left'
@@ -33,7 +33,7 @@
             id: console
             text: ""
             multiline: False
-            size_hint: 1,0.4
+            size_hint: 1,0.35
             pos_hint: {"x":0, "y":0.5}
             text_size: self.size
             halign: 'left'
@@ -43,7 +43,7 @@
     GridLayout:
         rows:1
         cols:1
-        size_hint: 1,0.4
+        size_hint: 1,0.6
         pos_hint: {"x":0, "y":0}
         ScrollView:
             do_scroll_x: False

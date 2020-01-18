@@ -13,7 +13,7 @@ serverData.Connect()
 serverID.Connect()
 serverID.ReadConfig("serwer", True)
 serverData.ReadConfig("ids", True)
-server.ReadConfig("kuba", True)
+server.ReadConfig("kacper", True)
 
 
 class MyGui(FloatLayout):
@@ -71,6 +71,8 @@ class MyGui(FloatLayout):
                 self.debug.text += " - BLAD, nie wybrales kolejki.\n"
         elif str(self.words[0].lower()) == "getids":
             self.getIds()
+        elif str(self.words[0].lower()) == "help":
+            self.help()
         else:
             self.debugUpdate(True)
 
@@ -104,6 +106,7 @@ class MyGui(FloatLayout):
     def giveID(self, ID):
         global idString
         if self.isNeeded:
+            serverID.Write(ID, "serwer_response")
             serverData.ReadConfig("ids", True)
             self.debugUpdate(False)
             self.isNeeded = False
@@ -117,21 +120,28 @@ class MyGui(FloatLayout):
 
     def sendCommand(self, command, args):
         if len(self.words) > 1:
-            server.Write("kuba" + " " + command + " " + args, self.queue)
+            server.Write("kacper" + " " + command + " " + args, self.queue)
         else:
-            server.Write("kuba" + " " + command, self.queue)
+            server.Write("kacper" + " " + command, self.queue)
         self.debugUpdate(False)
 
     def getInfoBack(self):
-        server.ReadConfig("kuba", True)
+        server.ReadConfig("kacper", True)
         if str(server.Read()) != "":
             formattedOutput = []
-            formattedOutput = str(server.Read()).split()
+            formattedOutput = str(server.Read()).replace("@", " ")
+            formattedOutput.split()
+            formattedOutput.replace("+", " ")
             self.debug.text += "\n" + str(formattedOutput)
             self.getInfoBack()
 
     def getIds(self):
         self.debug.text += "\n" + str(self.idList)
+
+    def help(self):
+        self.debug.text += "\n" + "Dostepne komendy aplikacji to: \nConnect, uzycie: connect + ID komputera\n" \
+                                  "Giveid, uzycie: giveid + nowe id maszyny\nCls - czyszczenie debuggera" \
+                                  "\nSend, uzycie: send + komenda + ew. arg\nids - zwraca aktywne kolejki"
 
 
 class MyApp(App):
@@ -146,4 +156,3 @@ def start():
 
 t2 = threading.Thread(target=start)
 t2.start()
-
