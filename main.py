@@ -4,11 +4,18 @@ from kivy.properties import ObjectProperty
 import RabbitMQ as rb
 import threading
 
-message = "jebanko"
-server = rb.Server()
+server = rb.server()
+serverID = rb.server()
+serverData = rb.server()
+
 server.Connect()
-serverID = rb.Server()
-server.ReadConfig("serwer", True)
+serverData.Connect()
+serverID.Connect()
+serverID.ReadConfig("serwer", True)
+serverData.ReadConfig("ids", True)
+server.ReadConfig("kuba", True)
+
+
 
 
 class MyGui(FloatLayout):
@@ -22,11 +29,17 @@ class MyGui(FloatLayout):
     isInQueue = False
     whileCommand = False
     isNeeded = False
-
+    idString = ""
+    idList = []
     def __init__(self, **kwargs):
         super(MyGui, self).__init__(**kwargs)
         t1 = threading.Thread(target=self.idUpdate)
         t1.start()
+        t4 = threading.Thread(target=self.getInfoBack)
+        t4.start()
+        self.idString = str(serverData.Read())
+        self.idList = self.idString.split()
+        print(self.idList)
 
     def on_enter(self):
         self.debug.text = self.debug.text + "\n" + self.console.text
@@ -36,6 +49,9 @@ class MyGui(FloatLayout):
 
     def interpretCommand(self):
         self.words = self.command.split()
+        self.words.append("")
+        self.words.append("")
+        self.words.append("")
         self.whileCommand = True
         if len(self.words) > 1 and str(self.words[0].lower()) == "connect":
             self.changeQueue(self.words[1])
@@ -46,8 +62,8 @@ class MyGui(FloatLayout):
         elif str(self.words[0].lower()) == "send" and len(self.words) > 1:
             if self.isInQueue:
                 if len(self.words) > 2:
-                    print(len(self.words))
-                    self.sendCommand(self.words[1].lower(), self.words[2])
+                    self.sendCommand(self.words[1].lower(),
+                                     self.words[2] + " " + self.words[3] + " " + self.words[4] + " " + self.words[5])
                 else:
                     self.sendCommand(self.words[1].lower(), "")
 
@@ -65,30 +81,30 @@ class MyGui(FloatLayout):
 
     def debugUpdate(self, didFail):
         if didFail:
-            self.debug.text += "- komenda zakonczona niepowodzeniem.\n"
+            self.debug.text += "- komenda zakonczona niepowodzeniem."
         else:
-            self.debug.text += "- komenda zakonczona powodzeniem.\n"
+            self.debug.text += "- komenda zakonczona powodzeniem."
 
     def idUpdate(self):
         serverID.ReadConfig("serwer", True)
-        server.ReadConfig("kuba", True)
-
-        if str(serverID.Read()) == "needID":
+        msg = str(serverID.Read())
+        print(msg)
+        if msg == "needID":
             self.isNeeded = True
             self.debug.text += " \nURZADZENIE PROSI O ID, WPISZ KOMENDE giveid + ID"
-            self.idUpdate()
-        elif str(server.Read()) != "":
-            formattedOutput = []
-            formattedOutput = str(server.Read()).split()
-            print(formattedOutput)
-            self.debug.text += str(formattedOutput)
-            self.idUpdate()
-
+            msg = ""
+        self.idUpdate()
     def giveID(self, ID):
+        global idString
         if self.isNeeded:
+            print("wysylam id")
             serverID.Write(ID, "serwer_response")
+            serverData.ReadConfig("ids", True)
             self.debugUpdate(False)
             self.isNeeded = False
+            print("czytam lsite id")
+            self.idString += " " + ID
+            serverData.Write(str(self.idString), "ids")
         else:
             self.debug.text += " - Nie otrzymano komendy needID"
             self.isNeeded = False
@@ -99,6 +115,18 @@ class MyGui(FloatLayout):
         else:
             server.Write("kuba" + " " + command, self.queue)
         self.debugUpdate(False)
+
+    def getInfoBack(self):
+        server.ReadConfig("kuba", True)
+        if str(server.Read()) != "":
+            formattedOutput = []
+            formattedOutput = str(server.Read()).split()
+            self.debug.text += "\n" + str(formattedOutput)
+            self.getInfoBack()
+
+    def getIds(self):
+        print(self.idList)
+
 
 
 class MyApp(App):
@@ -113,3 +141,5 @@ def start():
 
 t2 = threading.Thread(target=start)
 t2.start()
+
+""""""
