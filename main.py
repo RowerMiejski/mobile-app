@@ -39,6 +39,7 @@ presentation = Builder.load_string("""
 
         TextInput:
             id: console
+            do_scroll_x: False
             text: ""
             multiline: False
             size_hint: 1,0.35
@@ -104,13 +105,18 @@ class MyGui(FloatLayout):
         self.isNeeded = False
         self.words = []
         self.savedDir = ""
+        self.lastCommand = "There was no last command"
+        self.lastCommandBool = False
 
     def on_enter(self):
         self.debug.text = self.debug.text + "\n" + self.console.text
         self.command = ""
         self.command = str(self.console.text)
         self.interpretCommand()
-        self.console.text = ""
+        self.lastCommand = str(self.console.text)
+        if not self.lastCommandBool:
+            self.console.text = ""
+
 
     def interpretCommand(self):
         self.words = []
@@ -128,13 +134,12 @@ class MyGui(FloatLayout):
         elif str(self.words[0].lower()) == "s" and len(self.words) > 1:
             if self.isInQueue:
                 if len(self.words) - 3 > 2:
-                    if self.savedDir.lower() == "saveddir":
+                    if self.words[2].lower() == "saveddir":
                         self.sendCommand(self.words[1].lower(),
                                          self.savedDir + " " + self.words[3] + " " + self.words[4] + " " + self.words[5])
                     else:
                         self.sendCommand(self.words[1].lower(),
-                                         self.words[2] + " " + self.words[3] + " " + self.words[4] + " " + self.words[
-                                             5])
+                                         self.words[2] + " " + self.words[3] + " " + self.words[4] + " " + self.words[5])
                 else:
                     self.sendCommand(self.words[1].lower(), "")
 
@@ -146,13 +151,19 @@ class MyGui(FloatLayout):
             self.help()
         elif str(self.words[0].lower()) == "savedir":
             self.savedDir = str(self.words[1])
+        elif str(self.words[0].lower()) == "last":
+            self.console.text = ""
+            self.console.text = self.lastCommand
+            self.lastCommandBool = True
+            self.debugUpdate(False)
         else:
             self.debugUpdate(True)
+
 
     def changeQueue(self, args):
         self.queue = str(args)
         self.idBox.text = ""
-        if self.queue in self.idList:
+        if self.queue in self.idList or self.queue == "all":
             self.idBox.text = "ID: " + self.queue
             self.debugUpdate(False)
         else:
@@ -164,7 +175,7 @@ class MyGui(FloatLayout):
         if didFail:
             self.debug.text += "- command went up with error."
         else:
-            self.debug.text += "- command suceed."
+            self.debug.text += "- command succeed."
 
     def idUpdate(self):
         serverID.ReadConfig("serwer", True)
@@ -172,7 +183,7 @@ class MyGui(FloatLayout):
         print(msg)
         if msg == "needID":
             self.isNeeded = True
-            self.debug.text += " \nNEW DEVICE NEEDS ID, USE COMMAND GIVEID + ID TO ASIGN NEW ID"
+            self.debug.text += " \nNEW DEVICE NEEDS ID, USE COMMAND GIVEID + ID TO ASSIGN NEW ID"
             msg = ""
         self.rerunGetId()
         return True
@@ -196,6 +207,8 @@ class MyGui(FloatLayout):
         if self.queue == "all":
             for i in range (0, len(self.idList)-1):
                 serverSend.Write("kuba" + " " + command + " " + args, str(self.idList[i]))
+            self.debugUpdate(False)
+            return True
 
         if len(self.words) > 1:
             serverSend.Write("kuba" + " " + command + " " + args, self.queue)
@@ -207,8 +220,8 @@ class MyGui(FloatLayout):
         server.ReadConfig("kuba", True)
         formattedOutput = str(server.Read()).replace("@", " ")
         formattedOutput.split()
-        formattedOutput.replace("+", " ")
-        self.debug.text += "\n" + str(formattedOutput)
+        self.debug.text += "\n" + str(formattedOutput).replace(r'" "', '\n').replace(r'\n', '\n')
+
         self.rerunGetInfoBack()
         return True
 
@@ -219,7 +232,8 @@ class MyGui(FloatLayout):
         self.debug.text += "\n" + "Available application commands: \nConnect, use: connect + computers ID\n" \
                                   "Giveid, use: giveid + new machine ID\nCls - purging debugger" \
                                   "\nSend, use: s + command + args\ngetids - returns available queues\n" \
-                                  "Savedir - saves your directory provided in given argument. can be used by calling f/e: send listdir saveddir"
+                                  "Savedir - saves your directory provided in given argument. " \
+                                  "can be used by calling f/e: send listdir saveddir"
 
     def rerunGetInfoBack(self):
         self.getInfoBack()
